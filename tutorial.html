@@ -13149,30 +13149,16 @@ div#notebook {
 
 <span class="c1"># proportion of neighbors treated</span>
 <span class="n">ptn</span> <span class="o">&lt;-</span> <span class="n">tn</span><span class="o">/</span><span class="n">degree</span>
-<span class="c1">#ptn[is.na(ptn) == TRUE] &lt;- 1 # observations with no neighbors return na, so replace with 1</span>
 
 <span class="c1"># function to generate the observed values. We&#39;ll pretend we don&#39;t know this function.</span>
-<span class="c1"># Beta is the treatment effect and it slows down the doubling rate</span>
-<span class="c1"># tau controls the spillover effect</span>
-<span class="c1"># z is the binary treatment variable</span>
-<span class="c1"># x is the number of neighbors not treated</span>
-<span class="c1"># treated turns off spillover effects</span>
-<span class="n">natural_growth</span> <span class="o">&lt;-</span> <span class="nf">function</span><span class="p">(</span><span class="n">beta</span><span class="p">,</span> <span class="n">z</span><span class="p">){</span>
-    <span class="m">2</span><span class="o">^</span><span class="p">(</span><span class="m">10</span><span class="p">)</span><span class="o">/</span><span class="m">2</span><span class="o">^</span><span class="p">(</span><span class="n">beta</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="n">spill_over</span> <span class="o">&lt;-</span> <span class="nf">function</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">tau</span><span class="p">){</span>
-    <span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">tau</span><span class="p">)</span>
-<span class="p">}</span>
 
 <span class="c1"># create the starting value</span>
 <span class="n">init</span> <span class="o">&lt;-</span> <span class="nf">floor</span><span class="p">(</span><span class="nf">runif</span><span class="p">(</span><span class="m">48</span><span class="p">,</span> <span class="n">min</span> <span class="o">=</span> <span class="m">1</span><span class="p">,</span> <span class="n">max</span> <span class="o">=</span> <span class="m">5</span><span class="p">))</span>
 
-<span class="c1"># create the observed value. Assumes a doubling time of 3 days with no treatment.</span>
-<span class="n">natural_outcome</span> <span class="o">&lt;-</span> <span class="n">init</span> <span class="o">*</span> <span class="nf">natural_growth</span><span class="p">(</span><span class="n">beta</span> <span class="o">=</span> <span class="m">2</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="p">)</span>
-<span class="n">spill_outcome</span> <span class="o">&lt;-</span> <span class="nf">spill_over</span><span class="p">(</span><span class="n">natural_outcome</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">cn</span><span class="p">,</span> <span class="n">tau</span> <span class="o">=</span> <span class="n">.</span><span class="m">05</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">&lt;-</span> <span class="n">natural_outcome</span> <span class="o">+</span> <span class="n">spill_outcome</span>
-
+<span class="c1"># add a random error</span>
+<span class="n">u</span> <span class="o">&lt;-</span> <span class="nf">abs</span><span class="p">(</span><span class="nf">round</span><span class="p">(</span><span class="nf">rnorm</span><span class="p">(</span><span class="m">48</span><span class="p">,</span> <span class="n">mean</span> <span class="o">=</span> <span class="m">20</span><span class="p">,</span> <span class="n">sd</span> <span class="o">=</span> <span class="m">10</span><span class="p">)))</span>
+<span class="c1"># generate the data</span>
+<span class="n">y</span> <span class="o">&lt;-</span> <span class="n">init</span> <span class="o">+</span> <span class="n">init</span> <span class="o">*</span> <span class="m">1000</span> <span class="o">*</span> <span class="nf">abs</span><span class="p">(</span><span class="n">z</span><span class="m">-1</span><span class="p">)</span> <span class="o">+</span> <span class="m">200</span> <span class="o">*</span> <span class="n">cn</span> <span class="o">+</span> <span class="n">u</span>
 
 <span class="n">df</span> <span class="o">&lt;-</span> <span class="nf">data.frame</span><span class="p">(</span><span class="n">init_cases</span> <span class="o">=</span> <span class="n">init</span><span class="p">,</span> 
                  <span class="n">cases_1month</span> <span class="o">=</span> <span class="nf">round</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> 
@@ -13208,7 +13194,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-r"><pre><span></span><span class="nf">head</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
@@ -13236,12 +13222,12 @@ div#notebook {
 	<tr><th></th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;dbl&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;int&gt;</th><th scope=col>&lt;dbl&gt;</th></tr>
 </thead>
 <tbody>
-	<tr><th scope=row>AL</th><td>2</td><td>2150</td><td>0</td><td>4</td><td>3</td><td>1</td><td>0.7500000</td></tr>
-	<tr><th scope=row>AZ</th><td>4</td><td>1126</td><td>1</td><td>5</td><td>3</td><td>2</td><td>0.6000000</td></tr>
-	<tr><th scope=row>AR</th><td>1</td><td>1126</td><td>0</td><td>6</td><td>4</td><td>2</td><td>0.6666667</td></tr>
-	<tr><th scope=row>CA</th><td>2</td><td> 538</td><td>1</td><td>3</td><td>2</td><td>1</td><td>0.6666667</td></tr>
-	<tr><th scope=row>CO</th><td>4</td><td>1178</td><td>1</td><td>7</td><td>4</td><td>3</td><td>0.5714286</td></tr>
-	<tr><th scope=row>CT</th><td>1</td><td>1126</td><td>0</td><td>3</td><td>1</td><td>2</td><td>0.3333333</td></tr>
+	<tr><th scope=row>AL</th><td>2</td><td>2230</td><td>0</td><td>4</td><td>3</td><td>1</td><td>0.7500000</td></tr>
+	<tr><th scope=row>AZ</th><td>4</td><td> 423</td><td>1</td><td>5</td><td>3</td><td>2</td><td>0.6000000</td></tr>
+	<tr><th scope=row>AR</th><td>1</td><td>1424</td><td>0</td><td>6</td><td>4</td><td>2</td><td>0.6666667</td></tr>
+	<tr><th scope=row>CA</th><td>2</td><td> 222</td><td>1</td><td>3</td><td>2</td><td>1</td><td>0.6666667</td></tr>
+	<tr><th scope=row>CO</th><td>4</td><td> 624</td><td>1</td><td>7</td><td>4</td><td>3</td><td>0.5714286</td></tr>
+	<tr><th scope=row>CT</th><td>1</td><td>1435</td><td>0</td><td>3</td><td>1</td><td>2</td><td>0.3333333</td></tr>
 </tbody>
 </table>
 
@@ -13262,7 +13248,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-r"><pre><span></span><span class="n">map</span> <span class="o">&lt;-</span> <span class="nf">data.frame</span><span class="p">(</span><span class="n">state</span> <span class="o">=</span> <span class="nf">rownames</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="n">treatment</span> <span class="o">=</span> <span class="n">df</span><span class="o">$</span><span class="n">treatment</span><span class="p">)</span>
@@ -15320,7 +15306,7 @@ height=420
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>To define the model we start by thinking of what we know about epidemics. We know the rate at which they grow is exponential, and that a common way to think about their growth is the number of days it takes for the population of infected to double. Let's say news reports are saying the population of infected doubled every 3 days without intervention. So a basic model might look like this:</p>
+<p>To define the model lets work with something simple and say the number of infected is a linear function of whether or not a state issued a stay at home order:</p>
 
 </div>
 </div>
@@ -15329,7 +15315,7 @@ height=420
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 \begin{equation*}
-y_i = n \times 2^\frac{days}{3}
+y_i = \beta_1 \times z_i
 \end{equation*}
 </div>
 </div>
@@ -15337,7 +15323,7 @@ y_i = n \times 2^\frac{days}{3}
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Where <em>n</em> is the number of people infected at a given time, and days is the number of days since n was measured. So if <em>n</em> = 5, then six days later the number of infected would have doubled twice and <em>y</em> would be 20. We are modeling a 30 day period, meaning the virus will double 10 times. Accordingly we get:</p>
+<p>Where z is where or not a stay at home issue was ordered and $\beta_1$ is the effect of the treatment. In addition we think there was some spillover effect from the treatment. We assume people in stay at home states stop traveling and thus reduce the spread of the virus. Individuals in states without the treatment continue to travel and spread the virus at an increased rate. We'll assume the rate of spillover is a function of how many adjacent states also issued stay at home orders.</p>
 
 </div>
 </div>
@@ -15346,7 +15332,7 @@ y_i = n \times 2^\frac{days}{3}
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 \begin{equation*}
-y_i = n \times 2^{10}
+y_i = \beta_1 \times z_i + \beta_2 \times x
 \end{equation*}
 </div>
 </div>
@@ -15354,56 +15340,7 @@ y_i = n \times 2^{10}
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>To counteract this growth, governors closedn on essential businesses and issued stay at home orders. We know this slows the doubling time, be we are unsure by how much. This is the treatment effect, and we will call the unknown size of the treatment efffect $\beta_1$. Since $\beta_1$ only influence the outcome if the treatment effect is applied, we need a term to cancel out its effect when there is no treatment. We'll call this term <em>z</em> and it will equal 1 if a state's governor issued stay at home orders and 0 otherwise. Our model now looks like this:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-\begin{equation*}
-y_i = n \times \frac{2^{10}}{2^{\beta_1 \times z}}
-\end{equation*}
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Notice how when <em>z</em> = 0 the exponent on the denomenator cancels out and the entire denominator goes to 1.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Spillover-Effects">Spillover Effects<a class="anchor-link" href="#Spillover-Effects">&#182;</a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>In addition to the direct effect of the treatment, we believe there will be a spill over effect. We assume people in stay at home states stop traveling and thus reduce the spread of the virus. Individuals in stats without the treatment continue to travel and spread the virus at an increased rate. We hypothesize the rate at which spill over occurs is determined by the number neighboring states that have not issued stay at home orders. We don't know the size of this effect, so we estimate that it increases the number of infected by a flat percent for each neighboring state. This percentage is our second parameter $\beta_2$. Our model now looks like this:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-\begin{equation*}
-(y_i = n \times \frac{2^{10}}{2^{\beta_1 \times z}}) + (\beta_2 \times x \times n \times \frac{2^{10}}{2^{\beta_1 \times z}}) 
-\end{equation*}
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Where $\beta_2$ is the spillover effect and <em>x</em> is the number of neighboring states within the control group. If all neighboring states have stay at home orders then x is zero and the right side term is canceled out, removing the spill over effect. In R, the equation looks like this:</p>
+<p>Where $x$ is the number of adjacent states that were treated and $\beta_2$ is the spillover effect.</p>
 
 </div>
 </div>
@@ -15418,269 +15355,17 @@ y_i = n \times \frac{2^{10}}{2^{\beta_1 \times z}}
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The uniformity trial is the outcome that would have occured if all observations would have been assigned to the control group. Since we can't actually observe this, we instead remove the hypothesized treatment effects from the observed values. The first step is to hypothesize values for the parameters we are measuring. Ideally you want to search a grid of value, but I'll justpick one value for each parameter. I'll estimate that stay at home orders will reduce the number of times the infected size doubles by 2 to 3 and that the spill over effect increases the infected by 10% per untreated neighbor. Lets define these values.</p>
+<p>The uniformity trial is the outcome that would have occured if all observations would have been assigned to the control group. Since we can't actually observe this, we instead remove the hypothesized treatment effects from the observed values. The first step is to hypothesize values for the parameters we are measuring. Ideally you want to search a grid of values, but I'll justpick one value for each parameter. As a starting point, let's run a simple linear model to estimate the coefficients.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[228]:</div>
+<div class="prompt input_prompt">In&nbsp;[86]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="n">B1</span> <span class="o">&lt;-</span> <span class="m">2.5</span>
-<span class="n">B2</span> <span class="o">&lt;-</span> <span class="n">.</span><span class="m">1</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we need to remove the estimated treatment effect from the network. Since nobody is treated, each state will have spill over from all its neighboring nodes. Because we hypothesize spillover is a percentage of the the otherwise infected total, lets first remove all spillover, then we'll remove treatment and add spillover back in as the final step.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[229]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="c1"># if an observation had no spill over, return the original value. Else, remove the spillover effect.</span>
-<span class="n">no_spill</span> <span class="o">&lt;-</span> <span class="nf">ifelse</span><span class="p">(</span><span class="n">df</span><span class="o">$</span><span class="n">control_neighbors</span> <span class="o">==</span> <span class="m">0</span><span class="p">,</span> <span class="n">df</span><span class="o">$</span><span class="n">cases_1month</span><span class="p">,</span> <span class="n">df</span><span class="o">$</span><span class="n">cases_1month</span><span class="o">/</span><span class="p">((</span><span class="n">df</span><span class="o">$</span><span class="n">control_neighbors</span> <span class="o">*</span> <span class="n">B2</span><span class="p">)</span> <span class="o">+</span> <span class="m">1</span><span class="p">))</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Now lets remove the treatment effect. Since we estiamte the treatment prevented 2.5 doublings, we double the obvserved values from treated states 2.5 times.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[230]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="n">no_treat</span> <span class="o">&lt;-</span> <span class="n">no_spill</span> <span class="o">*</span> <span class="m">2</span><span class="o">^</span><span class="p">(</span><span class="n">B1</span> <span class="o">*</span> <span class="n">df</span><span class="o">$</span><span class="n">treatment</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we add back in the spillover effect, which is the number of infected, plus a percentage of that total depending on the number of neighboring states. This gives us the estimated number of infected with the treatment effect removed.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[231]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="c1"># round because there are no partially infected people</span>
-<span class="n">df</span><span class="o">$</span><span class="n">y0</span> <span class="o">&lt;-</span> <span class="nf">round</span><span class="p">(</span><span class="n">no_treat</span> <span class="o">+</span> <span class="p">(</span><span class="n">no_treat</span> <span class="o">*</span> <span class="n">df</span><span class="o">$</span><span class="n">neighbors</span> <span class="o">*</span> <span class="n">B2</span><span class="p">))</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we calculate the test statistic for the uniformity trial. I'll use the difference of means for now.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[232]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="n">mu_treat</span> <span class="o">&lt;-</span> <span class="nf">mean</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">$</span><span class="n">treatment</span> <span class="o">==</span> <span class="m">1</span><span class="p">,</span> <span class="s">&#39;y0&#39;</span><span class="p">])</span>
-<span class="n">mu_control</span> <span class="o">&lt;-</span> <span class="nf">mean</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">$</span><span class="n">treatment</span> <span class="o">==</span> <span class="m">0</span><span class="p">,</span> <span class="s">&#39;y0&#39;</span><span class="p">])</span>
-
-<span class="n">y0_tstat</span> <span class="o">&lt;-</span> <span class="n">mu_control</span> <span class="o">-</span> <span class="n">mu_treat</span>
-<span class="n">y0_tstat</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
--1147.75
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Step-3-6:-Randomly-Assign-Treatments,-Calculate-the-Test-Statistic,-Repeat.-Calculate-the-p-value">Step 3-6: Randomly Assign Treatments, Calculate the Test Statistic, Repeat. Calculate the p value<a class="anchor-link" href="#Step-3-6:-Randomly-Assign-Treatments,-Calculate-the-Test-Statistic,-Repeat.-Calculate-the-p-value">&#182;</a></h1><h3 id="A.-The-Sharp-Null">A. The Sharp Null<a class="anchor-link" href="#A.-The-Sharp-Null">&#182;</a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>The sharp null hypothesis is that treatment assignment had no causal effect of any unit. We randomly assign treatment labels and then repeat the same thing we did in the previous section many times.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[233]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="c1"># get 100 unique permutations of the treatment vector</span>
-<span class="c1"># ideally you want more trials than this, but I kept the number relatively low for speed</span>
-<span class="n">perms</span> <span class="o">&lt;-</span> <span class="nf">data.frame</span><span class="p">(</span><span class="nf">sample</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="m">48</span><span class="p">))</span>
-<span class="n">nperms</span> <span class="o">&lt;-</span> <span class="m">1</span>
-<span class="nf">while</span><span class="p">(</span><span class="n">nperms</span> <span class="o">&lt;</span> <span class="m">100</span><span class="p">){</span>
-    <span class="n">perms</span> <span class="o">&lt;-</span> <span class="nf">cbind</span><span class="p">(</span><span class="n">perms</span><span class="p">,</span> <span class="nf">sample</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="m">48</span><span class="p">))</span>
-    <span class="n">perms</span><span class="p">[</span><span class="o">!</span><span class="p">(</span><span class="nf">duplicated</span><span class="p">(</span><span class="n">perms</span><span class="p">)),</span> <span class="p">]</span>
-    <span class="n">nperms</span> <span class="o">&lt;-</span> <span class="nf">length</span><span class="p">(</span><span class="n">perms</span><span class="p">)</span>
-<span class="p">}</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[234]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="c1">#set.seed(123)</span>
-<span class="n">random_trials</span> <span class="o">&lt;-</span> <span class="nf">c</span><span class="p">()</span>
-<span class="nf">for</span><span class="p">(</span><span class="n">i</span> <span class="n">in</span> <span class="m">1</span><span class="o">:</span><span class="nf">length</span><span class="p">(</span><span class="n">perms</span><span class="p">)){</span> 
-
-    <span class="c1"># now generate a randomized treatment vector and assign it to the random samples</span>
-    <span class="n">fdf</span> <span class="o">&lt;-</span> <span class="n">df</span>
-    <span class="n">fdf</span><span class="o">$</span><span class="n">fake_treat</span> <span class="o">&lt;-</span> <span class="n">perms</span><span class="p">[,</span><span class="n">i</span><span class="p">]</span>
-    <span class="n">fdf</span> <span class="o">&lt;-</span> <span class="n">tibble</span><span class="o">::</span><span class="nf">rownames_to_column</span><span class="p">(</span><span class="n">fdf</span><span class="p">,</span> <span class="s">&quot;state&quot;</span><span class="p">)</span> 
-
-    <span class="c1"># create the new graph object to find the number of adjacent treated nodes</span>
-    <span class="n">fakeg</span> <span class="o">&lt;-</span> <span class="nf">graph.data.frame</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">directed</span> <span class="o">=</span> <span class="kc">FALSE</span><span class="p">,</span> <span class="n">vertices</span> <span class="o">=</span> <span class="n">fdf</span><span class="p">)</span>
-
-    <span class="c1"># for each node, find the proportion of neighbors that were not treated</span>
-    <span class="c1">#fdegree &lt;- degree(fakeg)</span>
-    <span class="n">fdf</span><span class="o">$</span><span class="n">fntn</span> <span class="o">&lt;-</span> <span class="nf">sapply</span><span class="p">(</span><span class="nf">V</span><span class="p">(</span><span class="n">fakeg</span><span class="p">),</span> <span class="nf">function</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span><span class="n">allneighbors</span> <span class="o">=</span> <span class="nf">neighbors</span><span class="p">(</span><span class="n">fakeg</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="p">;</span> <span class="nf">length</span><span class="p">(</span><span class="n">allneighbors</span><span class="p">[</span><span class="n">allneighbors</span><span class="o">$</span><span class="n">fake_treat</span> <span class="o">==</span> <span class="m">0</span><span class="p">])})</span>
-    <span class="c1">#fdf$fpntn &lt;- fntn/fdegree</span>
-    <span class="c1">#fdf$fptn[is.na(fdf$fptn) == TRUE] &lt;- 1 # those with zero neighbors return NA so set their proportion equal to 1</span>
-
-    <span class="c1"># Now that we have the randomized treatment and the randomized </span>
-    <span class="c1"># proportion of treated neighbors, we can calculate the randomized uniformity trial</span>
-    <span class="c1"># remove spillover</span>
-    <span class="n">fno_spill</span> <span class="o">&lt;-</span> <span class="nf">ifelse</span><span class="p">(</span><span class="n">fdf</span><span class="o">$</span><span class="n">fntn</span> <span class="o">==</span> <span class="m">0</span><span class="p">,</span> <span class="n">fdf</span><span class="o">$</span><span class="n">cases_1month</span><span class="p">,</span> <span class="n">fdf</span><span class="o">$</span><span class="n">cases_1month</span><span class="o">/</span><span class="p">((</span><span class="n">fdf</span><span class="o">$</span><span class="n">fntn</span> <span class="o">*</span> <span class="n">B2</span><span class="p">)</span> <span class="o">+</span> <span class="m">1</span><span class="p">))</span>
-    <span class="c1"># remove treatment</span>
-    <span class="n">fno_treat</span> <span class="o">&lt;-</span> <span class="n">fno_spill</span> <span class="o">*</span> <span class="m">2</span><span class="o">^</span><span class="p">(</span><span class="n">B1</span> <span class="o">*</span> <span class="n">fdf</span><span class="o">$</span><span class="n">fake_treat</span><span class="p">)</span>
-    <span class="c1"># add spillover back in</span>
-    <span class="n">fdf</span><span class="o">$</span><span class="n">fy0</span> <span class="o">&lt;-</span> <span class="nf">round</span><span class="p">(</span><span class="n">fno_treat</span> <span class="o">+</span> <span class="p">(</span><span class="n">fno_treat</span> <span class="o">*</span> <span class="n">fdf</span><span class="o">$</span><span class="n">neighbors</span> <span class="o">*</span> <span class="n">B2</span><span class="p">))</span>
-
-    <span class="c1"># And now we calculate our test statistic for the randomized uniformity trial and return it</span>
-    <span class="n">fmu_treat</span> <span class="o">&lt;-</span> <span class="nf">mean</span><span class="p">(</span><span class="n">fdf</span><span class="p">[</span><span class="n">fdf</span><span class="o">$</span><span class="n">fake_treat</span> <span class="o">==</span> <span class="m">1</span><span class="p">,</span> <span class="s">&#39;fy0&#39;</span><span class="p">])</span>
-    <span class="n">fmu_control</span> <span class="o">&lt;-</span> <span class="nf">mean</span><span class="p">(</span><span class="n">fdf</span><span class="p">[</span><span class="n">fdf</span><span class="o">$</span><span class="n">fake_treat</span> <span class="o">==</span> <span class="m">0</span><span class="p">,</span> <span class="s">&#39;fy0&#39;</span><span class="p">])</span>
-    <span class="n">fy0_tstat</span> <span class="o">&lt;-</span> <span class="n">fmu_control</span> <span class="o">-</span> <span class="n">fmu_treat</span>
-    
-    <span class="c1">#rtstat &lt;- sum(residuals(lm(fy0 ~ fake_treat + fptn, data = fdf))^2) # use RSS as test stat instead of diff of means</span>
-    <span class="n">random_trials</span> <span class="o">&lt;-</span> <span class="nf">append</span><span class="p">(</span><span class="n">random_trials</span><span class="p">,</span> <span class="n">fy0_tstat</span><span class="p">)</span>
-<span class="p">}</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We now have a vector of test statistics from our randomized trials:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[235]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="n">random_trials</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">10</span><span class="p">]</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-<style>
-.list-inline {list-style: none; margin:0; padding: 0}
-.list-inline>li {display: inline-block}
-.list-inline>li:not(:last-child)::after {content: "\00b7"; padding: 0 .5ex}
-</style>
-<ol class=list-inline><li>-10276.2916666667</li><li>-9604.16666666667</li><li>-9331.29166666667</li><li>-8903</li><li>-8868.04166666667</li><li>-12184.25</li><li>-9439.41666666667</li><li>-8786.625</li><li>-5967.29166666667</li><li>-10327.5833333333</li></ol>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[236]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="nf">hist</span><span class="p">(</span><span class="n">random_trials</span><span class="p">)</span>
+<div class=" highlight hl-r"><pre><span></span><span class="nf">summary</span><span class="p">(</span><span class="nf">lm</span><span class="p">(</span><span class="n">cases_1month</span> <span class="o">~</span> <span class="n">treatment</span> <span class="o">+</span> <span class="n">treat_neighbors</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -15698,218 +15383,27 @@ y_i = n \times \frac{2^{10}}{2^{\beta_1 \times z}}
 
 
 
-<div class="output_png output_subarea ">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA0gAAANICAMAAADKOT/pAAAC+lBMVEUAAAABAQECAgIDAwME
-BAQFBQUGBgYHBwcICAgJCQkKCgoLCwsMDAwNDQ0ODg4PDw8QEBARERESEhITExMUFBQVFRUW
-FhYXFxcYGBgZGRkaGhobGxscHBwdHR0eHh4fHx8gICAhISEiIiIjIyMkJCQlJSUmJiYnJyco
-KCgpKSkqKiorKyssLCwtLS0uLi4vLy8wMDAxMTEyMjIzMzM0NDQ1NTU2NjY3Nzc4ODg5OTk6
-Ojo7Ozs8PDw9PT0+Pj4/Pz9AQEBBQUFCQkJDQ0NERERFRUVGRkZHR0dISEhJSUlKSkpLS0tM
-TExNTU1OTk5PT09QUFBRUVFSUlJTU1NUVFRVVVVWVlZXV1dYWFhZWVlaWlpbW1tcXFxdXV1e
-Xl5fX19gYGBhYWFiYmJjY2NkZGRlZWVmZmZnZ2doaGhpaWlqampra2tsbGxtbW1ubm5vb29w
-cHBxcXFycnJzc3N0dHR1dXV2dnZ3d3d4eHh5eXl6enp7e3t8fHx9fX1+fn5/f3+AgICBgYGC
-goKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+QkJCRkZGSkpKTk5OU
-lJSVlZWWlpaXl5eYmJiZmZmbm5ucnJydnZ2enp6fn5+goKChoaGioqKjo6OkpKSlpaWmpqan
-p6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrK0tLS1tbW2tra3t7e4uLi5ubm6
-urq7u7u8vLy9vb2+vr6/v7/AwMDBwcHCwsLDw8PExMTFxcXGxsbHx8fIyMjJycnKysrLy8vM
-zMzNzc3Ozs7Pz8/Q0NDR0dHS0tLT09PU1NTV1dXW1tbX19fY2NjZ2dna2trb29vc3Nzd3d3e
-3t7f39/g4ODh4eHi4uLj4+Pk5OTl5eXm5ubn5+fo6Ojp6enq6urr6+vs7Ozt7e3u7u7v7+/w
-8PDx8fHy8vLz8/P09PT19fX29vb39/f4+Pj5+fn6+vr7+/v8/Pz9/f3+/v7///+Nk8heAAAA
-CXBIWXMAABJ0AAASdAHeZh94AAAgAElEQVR4nO3deZwU5Z348WdmgOFWRJRbHRDxNoI4IEGj
-RC7Fi4h4I0QxiXE396EshE1CortxjevqekZ/uxuPqDFGF4lsAsaoiRHlJ5oohiiShZ/IJffU
-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
-CAlwgJAABwgJcICQAAcICXCAkAAHCAlwgJAABwgJcICQAAcICXCAkAAHCAlwgJAABwgJcICQ
-AAcICXCAkAAHCAlwgJAABwgJcICQAAcICXCAkAAHCAlwgJAABwgJcICQAAcICXCAkAAHCAlw
-gJAABwgJcICQAAcICXCAkAAHCAlwgJAABwgJcICQAAcICXCAkAAHCAlwgJAABwgJcICQAAcI
-CXCAkAAHCAlwgJAABwgJcICQAAcICXCAkOSsWZTSGulHgBxCkjOrU69UOs2SfgTIISQ5V14p
-Ow+HCEkOISlCSHIISRFCkkNIihCSHEJShJDkEJIihCSHkBQhJDmEpAghySEkRQhJDiEpQkhy
-CEkRQpJDSIoQkhxCUoSQ5BCSIoQkh5AUISQ5hKQIIckhJEUISQ4hKUJIcghJEUKSQ0iKEJIc
-QlKEkOQQkiKEJIeQFCEkOYSkCCHJISRFCEkOISlCSHIISRFCkkNIihCSHEJShJDkEJIihCSH
-kBQhJDmEpAghySEkRQhJDiEpQkhyCEkRQpJDSIoQkhxCUoSQ5BCSIoQkh5AUISQ5hKQIIckh
-JEUISQ4hKUJIcghJEUKSQ0iKEJIcQlKEkOQQkiKEJIeQFCEkOYSkCCHJISRFCEkOISmSNqQ9
-b67Y5eSOVCFCUiRxSDfc7V/sXNDVmE5XfejwDlURQlIkcUjmNP/iatPrgmtGm2EfO7xH1YOQ
-FEkV0qs1o9b5m/ebGxzeo+pBSIqkCukOsyzcPmWks/tTTQhJkVQhzTWbw+053Zzdn2pCSIqk
-CukBszzcPneQq7tTVQhJkeQh9V/w8It9pjX5m893uMDhPaoehKRI4pAG1ZjAU553XX3nV1ze
-papBSIok/4Hsx8sfXTjrk4s8r++xv3N4h6oIISni4FeE/rzvTauHN+QM7rk7/RoqEZIiaUJa
-uzL720Hr3mvxnh333ZnzNbMjxRqaEZIiyUN66RhjDr473Bxf7CjLCMmCkBRJHNI7XWrHT643
-twTbhJQIISmSOKRLan7hP7lr6LTCI6SECEmRxCENmRBcruw8xSOkhAhJkcQhdb02fPMNs4SQ
-EiIkRRKHdFRj+GZjv4aNhJQMISmSOKTrzde3Bm8fN+duIKRECEmRxCFtOMzUh98mfdP06E1I
-SRCSIsl/jrTlxtHHhxv3DjOElAQhKeLiXxFqWvVskfcSkg0hKVL+f46LkGwISRFCkkNIihCS
-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
-niekWAjJRvpElp4npFgIyUb6RJaeJ6RYCMlG+kSWniekWAjJRvpElp4npFgIyUb6RJaeJ6RY
-CMlG+kSWniekWAjJRvpElp4npFgIyUb6RJaeJ6RYCMlG+kSWniekWAjJRvpElp4npFgIyUb6
-RJaeJ6RYCMlG+kSWniekWAjJRvpElp4npFgIyUb6RJaeJ6RYCMlG+kSWniekWAjJRvpElp4n
-pFgIyUb6RJaeJ6RYCMlG+kSWniekWAjJRvpElp4npFgIyUb6RJaeJ6RYCMlG+kSWniekWAjJ
-RvpElp4npFgIyUb6RJaeJ6RYCMlG+kSWniekWAjJRvpElp4npFgIyUb6RJaeJ6SIPW+u2FV8
-D0KykT6RpecJKXDD3f7FzgVdjel01YfFdiQkG+kTWXqekMLB0/yLq02vC64ZbYZ9XGRHQrKR
-PpGl5wkpHPRDerVm1Dp/835zQ5EdCclG+kSWniekcNAP6Q6zLNw+ZWSLd+567KGcBYRkIX0i
-S88TUjjohzTXbA6353Rr8c53+/XK6WG2p7mD7RghpZsnpHDQD+kBszzcPndQkR15amcjfSJL
-zxNSONh/wcMv9pnW5G8+3+GCIjsSko30iSw9T0iBQTUm8JTnXVff+ZUiOxKSjfSJLD1PSKGP
-lz+6cNYnF3le32N/V2w/QrKRPpGl5wkp35+Lv5uQbKRPZOl5QoqFkGykT2TpeUKKhZBspE9k
-6XlCioWQbKRPZOl5QoqFkGykT2TpeUKKhZBspE9k6XlCioWQbKRPZOl5QoqFkGykT2TpeUKK
-hZBspE9k6XlCioWQbKRPZOl5QoqFkGykT2TpeUKKhZBspE9k6XlCioWQbKRPZOl5QoqFkGyk
-T2TpeUKKhZBspE9k6XlCiqX9hvTPDen0OCnd+tInsvQ8IcXSfkO6cvSdqfSp8BNZep6QYmnH
-IfHUTHSekGIhJOYLI6RYCIn5wggpFkJivjBCioWQmC+MkGIhJOYLI6RYCIn5wggpFkJivjBC
-ioWQmC+MkGIhJOYLI6RYCIn5wggpFkJivjBCioWQmC+MkGIhJOYLI6RYCIn5wggpFkJivjBC
-ioWQmC+MkGIhJOYLI6RYyhfSynT/p/idY85Lt770iVjp84QUS/lCmtkj3T9e0vHwdOtLn4iV
-Pk9IsZQvJJ6aVfY8IcVCSMwXRkixEBLzhRFSLITEfGGEFAshMV8YIcVCSMwXRkixEBLzhRFS
-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
-BDjw/wEs4XV4xkQxswAAAABJRU5ErkJggg=="
-width=420
-height=420
->
+<div class="output_text output_subarea ">
+<pre>
+Call:
+lm(formula = cases_1month ~ treatment + treat_neighbors, data = df)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-1571.42  -477.77   -48.72   160.71  1850.75 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)      3010.806    286.883  10.495 1.12e-13 ***
+treatment       -2513.113    255.321  -9.843 8.52e-13 ***
+treat_neighbors    -8.388     97.684  -0.086    0.932    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 878.9 on 45 degrees of freedom
+Multiple R-squared:  0.6851,	Adjusted R-squared:  0.6711 
+F-statistic: 48.96 on 2 and 45 DF,  p-value: 5.1e-12
+</pre>
 </div>
 
 </div>
@@ -15921,77 +15415,18 @@ height=420
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Calculate-the-P-value">Calculate the P value<a class="anchor-link" href="#Calculate-the-P-value">&#182;</a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[238]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="c1"># get the number of random trials less than than what we observed</span>
-<span class="n">num</span> <span class="o">&lt;-</span> <span class="nf">sum</span><span class="p">(</span><span class="nf">abs</span><span class="p">(</span><span class="n">y0_tstat</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nf">abs</span><span class="p">(</span><span class="n">random_trials</span><span class="p">))</span>
-<span class="n">p</span> <span class="o">&lt;-</span> <span class="n">num</span><span class="o">/</span><span class="m">100</span>
-<span class="n">p</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-1
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>In this instance higher p vlues are associated with greater evidence against the sharp null. The reason for this is because if treatment is having an effect, then removing its effect</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="B.-Testing-for-Interference">B. Testing for Interference<a class="anchor-link" href="#B.-Testing-for-Interference">&#182;</a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>To test the spillover effect exclusively we repeat the above process but define our test statistic in terms of control states and the the number of treatment/control states adjacent to them. Lets statrt by removing the spillover effect:</p>
+<p>For illustrative purposes lets assume the value of the treatment parameter is known and we will only vary the interference parameter. In an actual application you'll want to grid search across both of these parameters. Let's define the parameters now based on the results of the regression:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[239]:</div>
+<div class="prompt input_prompt">In&nbsp;[85]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="c1"># Set the estimated value of the parameter</span>
-<span class="n">B2</span> <span class="o">&lt;-</span> <span class="n">.</span><span class="m">1</span>
-<span class="c1"># if an observation had no spill over, return the original value. Else, remove the spillover effect.</span>
-<span class="n">df</span><span class="o">$</span><span class="n">y0</span> <span class="o">&lt;-</span> <span class="nf">ifelse</span><span class="p">(</span><span class="n">df</span><span class="o">$</span><span class="n">control_neighbors</span> <span class="o">==</span> <span class="m">0</span><span class="p">,</span> <span class="n">df</span><span class="o">$</span><span class="n">cases_1month</span><span class="p">,</span> <span class="n">df</span><span class="o">$</span><span class="n">cases_1month</span><span class="o">/</span><span class="p">((</span><span class="n">df</span><span class="o">$</span><span class="n">control_neighbors</span> <span class="o">*</span> <span class="n">B2</span><span class="p">)</span> <span class="o">+</span> <span class="m">1</span><span class="p">))</span>
+<div class=" highlight hl-r"><pre><span></span><span class="n">B1</span> <span class="o">&lt;-</span> <span class="m">-2513</span>
+<span class="n">B2</span> <span class="o">&lt;-</span> <span class="m">-8</span>
 </pre></div>
 
     </div>
@@ -16002,17 +15437,42 @@ height=420
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>$\beta_2$ is continuous and the number of adjacent states varies, so a simple difference of means probably isn't the best test statistic. Let's use the the residual sum of squares from a linear model instead.</p>
+<p>Now we need to remove the estimated treatment effect from the network:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[240]:</div>
+<div class="prompt input_prompt">In&nbsp;[79]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-r"><pre><span></span><span class="n">y0_rss</span> <span class="o">&lt;-</span> <span class="nf">sum</span><span class="p">(</span><span class="nf">residuals</span><span class="p">(</span><span class="nf">lm</span><span class="p">(</span><span class="n">y0</span> <span class="o">~</span> <span class="n">control_neighbors</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">$</span><span class="n">treatment</span> <span class="o">==</span> <span class="m">0</span><span class="p">,]))</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+<div class=" highlight hl-r"><pre><span></span><span class="n">df</span><span class="o">$</span><span class="n">y0</span> <span class="o">&lt;-</span> <span class="nf">round</span><span class="p">(</span><span class="n">df</span><span class="o">$</span><span class="n">cases_1month</span> <span class="o">-</span> <span class="n">B1</span><span class="o">*</span><span class="n">df</span><span class="o">$</span><span class="n">treatment</span> <span class="o">-</span> <span class="n">df</span><span class="o">$</span><span class="n">treat_neighbors</span><span class="o">*</span><span class="n">B2</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we calculate the test statistic for the uniformity trial. In this case I'll use the residual sum of squares:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[80]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-r"><pre><span></span><span class="n">y0_rss</span> <span class="o">&lt;-</span> <span class="nf">lm</span><span class="p">(</span><span class="n">y0</span> <span class="o">~</span> <span class="n">treatment</span> <span class="o">+</span> <span class="n">treat_neighbors</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="p">)</span> <span class="o">%&gt;%</span>
+            <span class="n">residuals</span> <span class="o">%&gt;%</span>
+            <span class="nf">`^`</span><span class="p">(</span><span class="m">2</span><span class="p">)</span> <span class="o">%&gt;%</span>
+            <span class="n">sum</span>
+
 <span class="n">y0_rss</span>
 </pre></div>
 
@@ -16031,7 +15491,7 @@ height=420
 
 
 <div class="output_html rendered_html output_subarea ">
-25521275.0837958
+34763569.4751242
 </div>
 
 </div>
@@ -16043,18 +15503,53 @@ height=420
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we repeat the randomization process</p>
+<h1 id="Step-3-4:-Randomly-Assign-Treatments,-Calculate-the-Test-Statistic,-Repeat.">Step 3-4: Randomly Assign Treatments, Calculate the Test Statistic, Repeat.<a class="anchor-link" href="#Step-3-4:-Randomly-Assign-Treatments,-Calculate-the-Test-Statistic,-Repeat.">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>First we randomly re-assign the treatment labels by permuting the labels. We want a unique permutation for each time we repeat the trial. Ideally you'll want to repeat the trail 1,000+ times for each unique combination of parameter values. I'll just do 100 here.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[241]:</div>
+<div class="prompt input_prompt">In&nbsp;[81]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-r"><pre><span></span><span class="nf">set.seed</span><span class="p">(</span><span class="m">123</span><span class="p">)</span>
+<span class="n">perms</span> <span class="o">&lt;-</span> <span class="nf">data.frame</span><span class="p">(</span><span class="nf">sample</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="m">48</span><span class="p">))</span> <span class="c1"># start with a single permuted vector of the original treatments</span>
+<span class="n">nperms</span> <span class="o">&lt;-</span> <span class="m">1</span> <span class="c1"># initiate a counter for the number of unique permutations</span>
+<span class="nf">while</span><span class="p">(</span><span class="n">nperms</span> <span class="o">&lt;</span> <span class="m">100</span><span class="p">){</span>
+    <span class="n">perms</span> <span class="o">&lt;-</span> <span class="nf">cbind</span><span class="p">(</span><span class="n">perms</span><span class="p">,</span> <span class="nf">sample</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="m">48</span><span class="p">))</span> <span class="c1"># permute the treatment</span>
+    <span class="n">perms</span><span class="p">[</span><span class="o">!</span><span class="p">(</span><span class="nf">duplicated</span><span class="p">(</span><span class="n">perms</span><span class="p">)),</span> <span class="p">]</span> <span class="c1"># if the permutation is not unique, drop it</span>
+    <span class="n">nperms</span> <span class="o">&lt;-</span> <span class="nf">length</span><span class="p">(</span><span class="n">perms</span><span class="p">)</span> <span class="c1"># increase the counter</span>
+<span class="p">}</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we repeat the uniformity trial for each randomized treatment vector, calculate the test statistics, and save the result.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[82]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-r"><pre><span></span><span class="n">random_trials</span> <span class="o">&lt;-</span> <span class="nf">c</span><span class="p">()</span>
-<span class="nf">for</span><span class="p">(</span><span class="n">i</span> <span class="n">in</span> <span class="m">1</span><span class="o">:</span><span class="nf">length</span><span class="p">(</span><span class="n">perms</span><span class="p">)){</span>
+<span class="nf">for</span><span class="p">(</span><span class="n">i</span> <span class="n">in</span> <span class="m">1</span><span class="o">:</span><span class="nf">length</span><span class="p">(</span><span class="n">perms</span><span class="p">)){</span> 
 
     <span class="c1"># now generate a randomized treatment vector and assign it to the random samples</span>
     <span class="n">fdf</span> <span class="o">&lt;-</span> <span class="n">df</span>
@@ -16065,21 +15560,19 @@ height=420
     <span class="n">fakeg</span> <span class="o">&lt;-</span> <span class="nf">graph.data.frame</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">directed</span> <span class="o">=</span> <span class="kc">FALSE</span><span class="p">,</span> <span class="n">vertices</span> <span class="o">=</span> <span class="n">fdf</span><span class="p">)</span>
 
     <span class="c1"># for each node, find the proportion of neighbors that were not treated</span>
-    <span class="c1">#fdegree &lt;- degree(fakeg)</span>
-    <span class="n">fdf</span><span class="o">$</span><span class="n">fntn</span> <span class="o">&lt;-</span> <span class="nf">sapply</span><span class="p">(</span><span class="nf">V</span><span class="p">(</span><span class="n">fakeg</span><span class="p">),</span> <span class="nf">function</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span><span class="n">allneighbors</span> <span class="o">=</span> <span class="nf">neighbors</span><span class="p">(</span><span class="n">fakeg</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="p">;</span> <span class="nf">length</span><span class="p">(</span><span class="n">allneighbors</span><span class="p">[</span><span class="n">allneighbors</span><span class="o">$</span><span class="n">fake_treat</span> <span class="o">==</span> <span class="m">0</span><span class="p">])})</span>
-    <span class="c1">#fdf$fpntn &lt;- fntn/fdegree</span>
-    <span class="c1">#fdf$fptn[is.na(fdf$fptn) == TRUE] &lt;- 1 # those with zero neighbors return NA so set their proportion equal to 1</span>
-
-    <span class="c1"># Now that we have the randomized treatment and the randomized </span>
-    <span class="c1"># proportion of treated neighbors, we can calculate the randomized uniformity trial</span>
-    <span class="c1"># remove spillover</span>
-    <span class="n">fdf</span><span class="o">$</span><span class="n">y0</span> <span class="o">&lt;-</span> <span class="nf">ifelse</span><span class="p">(</span><span class="n">fdf</span><span class="o">$</span><span class="n">fntn</span> <span class="o">==</span> <span class="m">0</span><span class="p">,</span> <span class="n">fdf</span><span class="o">$</span><span class="n">cases_1month</span><span class="p">,</span> <span class="n">fdf</span><span class="o">$</span><span class="n">cases_1month</span><span class="o">/</span><span class="p">((</span><span class="n">fdf</span><span class="o">$</span><span class="n">fntn</span> <span class="o">*</span> <span class="n">B2</span><span class="p">)</span> <span class="o">+</span> <span class="m">1</span><span class="p">))</span>
+    <span class="n">fdf</span><span class="o">$</span><span class="n">ftn</span> <span class="o">&lt;-</span> <span class="nf">sapply</span><span class="p">(</span><span class="nf">V</span><span class="p">(</span><span class="n">fakeg</span><span class="p">),</span> <span class="nf">function</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span><span class="n">allneighbors</span> <span class="o">=</span> <span class="nf">neighbors</span><span class="p">(</span><span class="n">fakeg</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="p">;</span> <span class="nf">length</span><span class="p">(</span><span class="n">allneighbors</span><span class="p">[</span><span class="n">allneighbors</span><span class="o">$</span><span class="n">fake_treat</span> <span class="o">==</span> <span class="m">1</span><span class="p">])})</span>
+    <span class="n">fdf</span><span class="o">$</span><span class="n">fcn</span> <span class="o">&lt;-</span> <span class="nf">sapply</span><span class="p">(</span><span class="nf">V</span><span class="p">(</span><span class="n">fakeg</span><span class="p">),</span> <span class="nf">function</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span><span class="n">allneighbors</span> <span class="o">=</span> <span class="nf">neighbors</span><span class="p">(</span><span class="n">fakeg</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="p">;</span> <span class="nf">length</span><span class="p">(</span><span class="n">allneighbors</span><span class="p">[</span><span class="n">allneighbors</span><span class="o">$</span><span class="n">fake_treat</span> <span class="o">==</span> <span class="m">0</span><span class="p">])})</span>
+    
+    <span class="c1"># remove the treatment</span>
+    <span class="n">fdf</span><span class="o">$</span><span class="n">fy0</span> <span class="o">&lt;-</span> <span class="nf">round</span><span class="p">(</span><span class="n">fdf</span><span class="o">$</span><span class="n">cases_1month</span> <span class="o">-</span> <span class="n">fdf</span><span class="o">$</span><span class="n">fake_treat</span><span class="o">*</span><span class="n">B1</span> <span class="o">-</span> <span class="n">fdf</span><span class="o">$</span><span class="n">ftn</span><span class="o">*</span><span class="n">B2</span><span class="p">)</span>
 
     <span class="c1"># And now we calculate our test statistic for the randomized uniformity trial and return it</span>
-    <span class="n">fy0_tstat</span> <span class="o">&lt;-</span> <span class="nf">sum</span><span class="p">(</span><span class="nf">residuals</span><span class="p">(</span><span class="nf">lm</span><span class="p">(</span><span class="n">fdf</span><span class="o">$</span><span class="n">y0</span> <span class="o">~</span> <span class="n">fdf</span><span class="o">$</span><span class="n">control_neighbors</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">fdf</span><span class="p">[</span><span class="n">fdf</span><span class="o">$</span><span class="n">treatment</span> <span class="o">==</span> <span class="m">0</span><span class="p">,]))</span><span class="o">^</span><span class="m">2</span><span class="p">)</span>
+    <span class="n">fy0_rss</span> <span class="o">&lt;-</span> <span class="nf">lm</span><span class="p">(</span><span class="n">fy0</span> <span class="o">~</span> <span class="n">fake_treat</span> <span class="o">+</span> <span class="n">ftn</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">fdf</span><span class="p">)</span> <span class="o">%&gt;%</span> 
+                        <span class="n">residuals</span> <span class="o">%&gt;%</span> 
+                        <span class="nf">`^`</span><span class="p">(</span><span class="m">2</span><span class="p">)</span> <span class="o">%&gt;%</span> 
+                        <span class="n">sum</span>
     
-    <span class="c1">#rtstat &lt;- sum(residuals(lm(fy0 ~ fake_treat + fptn, data = fdf))^2) # use RSS as test stat instead of diff of means</span>
-    <span class="n">random_trials</span> <span class="o">&lt;-</span> <span class="nf">append</span><span class="p">(</span><span class="n">random_trials</span><span class="p">,</span> <span class="n">fy0_tstat</span><span class="p">)</span>
+    <span class="n">random_trials</span> <span class="o">&lt;-</span> <span class="nf">append</span><span class="p">(</span><span class="n">random_trials</span><span class="p">,</span> <span class="n">fy0_rss</span><span class="p">)</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -16088,9 +15581,24 @@ height=420
 </div>
 
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Step-5:-Calculate-your-p-value">Step 5: Calculate your p value<a class="anchor-link" href="#Step-5:-Calculate-your-p-value">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's take a look at the distribution of our randomized trials:</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[242]:</div>
+<div class="prompt input_prompt">In&nbsp;[83]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-r"><pre><span></span><span class="nf">hist</span><span class="p">(</span><span class="n">random_trials</span><span class="p">)</span>
@@ -16112,7 +15620,7 @@ height=420
 
 
 <div class="output_png output_subarea ">
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA0gAAANICAMAAADKOT/pAAAC/VBMVEUAAAABAQECAgIDAwME
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA0gAAANICAMAAADKOT/pAAADAFBMVEUAAAABAQECAgIDAwME
 BAQFBQUGBgYHBwcICAgJCQkKCgoLCwsMDAwNDQ0ODg4PDw8QEBARERESEhITExMUFBQVFRUW
 FhYXFxcYGBgZGRkaGhobGxscHBwdHR0eHh4fHx8gICAhISEiIiIjIyMkJCQlJSUmJiYnJyco
 KCgpKSkqKiorKyssLCwtLS0uLi4vLy8wMDAxMTEyMjIzMzM0NDQ1NTU2NjY3Nzc4ODg5OTk6
@@ -16122,207 +15630,227 @@ Xl5fX19gYGBhYWFiYmJjY2NkZGRlZWVmZmZnZ2doaGhpaWlqampra2tsbGxtbW1ubm5vb29w
 cHBxcXFycnJzc3N0dHR1dXV2dnZ3d3d4eHh5eXl6enp7e3t8fHx9fX1+fn5/f3+AgICBgYGC
 goKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+QkJCRkZGSkpKTk5OU
 lJSVlZWWlpaXl5eYmJiZmZmampqbm5ucnJydnZ2enp6fn5+goKChoaGioqKjo6OkpKSlpaWm
-pqanp6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrK0tLS1tbW2tra3t7e4uLi5
-ubm6urq7u7u8vLy9vb2+vr6/v7/AwMDBwcHCwsLDw8PExMTFxcXGxsbHx8fIyMjJycnKysrL
-y8vMzMzNzc3Ozs7Pz8/Q0NDR0dHS0tLT09PU1NTV1dXW1tbX19fY2NjZ2dna2trb29vc3Nzd
-3d3e3t7f39/g4ODh4eHi4uLj4+Pk5OTl5eXm5ubn5+fo6Ojp6enq6urr6+vs7Ozt7e3u7u7v
-7+/w8PDx8fHy8vLz8/P09PT19fX29vb39/f4+Pj5+fn6+vr7+/v8/Pz9/f3+/v7////lp849
-AAAACXBIWXMAABJ0AAASdAHeZh94AAAgAElEQVR4nO3deZxU1Znw8dPdbAqiCCg7BBDBLSqI
-DSIa3BCUiCKIu4GAmqgzEyeLUQIheWNGJ3GMccwbF4zOEtFEMzE6aCQKxjhGR5RRSQyGRCSB
-cQFk776fubequruq+9xqzjlP16k+9fv+0V1dfZ97blXOz15DqwiAM+X7AoAQEBIggJAAAYQE
-CCAkQAAhAQIICRBASIAAQgIEEBIggJAAAYQECCAkQAAhAQIICRBASIAAQgIEEBIggJAAAYQE
-CCAkQAAhAQIICRBASIAAQgIEEBIggJAAAYQECCAkQAAhAQIICRBASIAAQgIEEBIggJAAAYQE
-CCAkQAAhAQIICRBASK1ZopR6IXtzpFIToujB+I49ni5m98KhHbs+YDX6RHzZmySuQff471Kq
-m8S52y9Cak1ZhfRP8drqbqtRQmpThNSavQppT3zfv5fgYk5R6sDPrbAatQ2pxUMjJB1Cak2L
-kN5esmRJfbODShXSKKWutRwVC0n3+AmJkFrTIiSdUoUUX8GNlqNiIekQEiG1pkVIDZum/qdn
-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
-GTBrudzloIQISZB1SNsnK9Xv+ClTagcqddYOyUtCiRCSIOuQFqjJr2RvrZ6tFktdDkqIkARZ
-h1Q7cnfDzfqJ42UuBiVFSIKsQ+p+WdPtG7pLXApKjJAEWYc0btSextuTxolcC0qLkARZh7RQ
-TX0te2vNJWqR1OWghAhJkP137aYoNWjCtE9PHKrUmXzXrj0iJEEOP0d6ZnbfGqVq+s58Wu5y
-UEKEJMjtNxvqNryn/c2GtzurJjV7dIfAO0IS5BLShjdz3wHf+Odm76n/VdO/tH6b2umwBtoO
-IQmyD+m/jlDq4HsyN08tdpaVhFSmCEmQdUh/2Kf61Cmd1W3JbUJqlwhJkHVIF1X9PP7kbmin
-1REhtVOEJMg6pGFnJC/f7DI1IqR2ipAEWYe071WZV19WywmpnSIkQdYhHVabefVR36EfEVL7
-REiCrEO6Tn3p4+T1o+qcDwipXSIkQdYhffAJ1TnzZdJX1H49Cak9IiRB9j9H2nrTuE9mbtw3
-QhFSe0RIgiT+FaH6tU8VeS8hlStCEtT2/xwXIZUrQhJESJWLkAQRUuUiJEGEVLkISRAhVS5C
-EkRIlYuQBBFS5SIkQYRUuQhJECFVLkISREiVi5AEEVLlIiRBhFS5CEkQIVUuQhJESJWLkAQR
-UuUiJEGE5M9D57sZN85tfsjJbtdPSHkIyZ/Lj/ySkx49HOeHO14/ITUhJH9cN+JwxxBc5wkp
-DyH5Q0gBISR/CCkghOQPIQWEkPwhpIAQkj+EFBBC8oeQAkJI/hBSQAjJH0IKCCH5Q0gBISR/
-CCkghOQPIQWEkPwhpIAQkj+EFBBC8oeQAkJI/hBSQAjJH0IKCCH5Q0gBISR/CCkghOQPIQWE
-kPwhpIAQkj+EFBBC8oeQAkJI/hBSQAjJH0IKCCHZe/MHbsZPd1ufkMoIIdm7Yr+hTjoe4rY+
-IZURQrLX3j81IyRBhGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJ
-bT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzm
-g0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4o
-hGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI
-9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSP
-kNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJ
-bT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzm
-g0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4o
-hGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI
-9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg0JI9gjJbT4ohGSPkNzmg+IaUt1bq3cXP4KQ
-0vgOgZAEWYd04z3xi12L91Wq02feL3YgIaXxHQIhCbIOSZ0cv5inepw3f5wasa3IgYSUxncI
-hCTIKaRXq8ZujG/er24sciAhpfEdAiEJcgrpLrUyc/uEMUUOJKQ0vkMgJEFOIS1QWzK3r+xa
-5EBCSuM7BEIS5BTSA2pV5vY5A4scSEhpfIdASILsQ+q3eOmLvWfUxzef73BekQMJKY3vEAhJ
-kHVIA6tU4vEouqZzl1eKHEhIaXyHQEiC7H8gu23VIzfPOXFZFPU58jfFjiOkNL5DICRBAr8i
-9PuWd338jzc3uoqQUvgOgZAEtc3v2q2fMLrRoWpHm6zhHyG5zQeFX1q1R0hu80EhJHuE5DYf
-FEKyR0hu80GxDumAAkUOJKQ0vkMgJEHWId15mFKHHdGgyIGElMZ3CIQkyP5Tu49H7t234wgp
-je8QCEmQw9dI3yIkt3nfIRCSIIeQnuhCSE58h0BIgviunT1CcpsPCiHZIyS3+aAQkj1CcpsP
-CiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQ
-kj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZ
-IyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1C
-cpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3
-+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsP
-CiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQ
-kj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZ
-IyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1C
-cpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPCiHZIyS3+aAQkj1CcpsPSn5ISz5q
-ixUIKY3vEAhJUH5Iqsu5D20TX4GQ0vgOgZAE5Yf0/ZOqVbeL/2OX7AqElMZ3CIQkqPBrpPfu
-iFs68LO/rBNcgZDS+A6BkAS1+GbDe3dMrFZ9r3tBbAVCSuM7BEIS1PK7dv+98BMqduhjQisQ
-UhrfIRCSoMKQdv/yusFK9Zn/5Mtf6Fb1S5kVCCmN7xAISVB+SA9f0kOpYV9YWZ+88bK6WmYF
-QkrjOwRCElTw7W911MJXG974qNctMisQUhrfIRCSoPyQbn27LVYgpDS+QyAkQYVfI72bfF10
-/+uiKxBSGt8hEJKg/JD2XF81Jn41RF3Dz5H2BiG5zQclP6Q7Ve3P4lfPTlM/FFyBkNL4DoGQ
-BOWHdNTw7JavP2aM4AqElMZ3CIQkKD+krvNzNz6/n+AKhJTGdwiEJCg/pEOn5G6cNUJwBUJK
-4zsEQhKUH9Kcmp9lXj9Zc6ngCoSUxncIhCQoP6SNA9Xp37j72+dU9XpXcAVCSuM7BEISVPBz
-pLWzq5LfVz1D9AdJhJTGdwiEJKjZb3//5bl/eeqPsisQUhrfIRCSIP7xE3uE5DYflIKQHpp1
-atYVgisQUhrfIRCSoPyQfqhUj14ZnxBcgZDS+A6BkATlh3T42HVtsAIhpfEdAiEJyg+py5Nt
-sQIhpfEdAiEJyg9pwFNtsQIhpfEdAiEJyg9pway2WIGQ0vgOgZAE5Ye0+5Kzn353a4bgCoSU
-xncIhCQoP6QD9lcNBFcgpDS+QyAkQfnJzG0iuAIhpfEdAiEJ4jcb7BGS23xQmoW0/bVfS69A
-SGl8h0BIggpC+uPMTvGXR3fOEP21VUJK4zsE1/lZpy9zs8Ft/bKSH9J7g9SE01S0tEPfPwuu
-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
-QmCC"
+pqanp6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrKzs7O0tLS1tbW2tra3t7e4
+uLi5ubm6urq7u7u8vLy9vb2+vr6/v7/AwMDBwcHCwsLDw8PExMTFxcXGxsbHx8fIyMjJycnK
+ysrLy8vMzMzNzc3Ozs7Pz8/Q0NDR0dHS0tLT09PU1NTV1dXW1tbX19fY2NjZ2dna2trb29vc
+3Nzd3d3e3t7f39/g4ODh4eHi4uLj4+Pk5OTl5eXm5ubn5+fo6Ojp6enq6urr6+vs7Ozt7e3u
+7u7v7+/w8PDx8fHy8vLz8/P09PT19fX29vb39/f4+Pj5+fn6+vr7+/v8/Pz9/f3+/v7////i
+sF19AAAACXBIWXMAABJ0AAASdAHeZh94AAAgAElEQVR4nO3de2AU5b3w8SeES7gqIsodBURA
+sSqIAREt0ooBryCKdwsFtVrPaW211lIo7Vt76ntqrfXYt16w+p5z1Npqj7VapNIq1irVinJU
+qmJtVXqgIBcBgWTOzG5mmN3k2Z1n8uzsb3e+nz+yk83szC+T52uSTSTKAdBmqtwDANWAkAAL
+CAmwgJAACwgJsICQAAsICbCAkAALCAmwgJAACwgJsICQAAsICbCAkAALCAmwgJAACwgJsICQ
+AAsICbCAkAALCAmwgJAACwgJsICQAAsICbCAkAALCAmwgJAACwgJsICQAAsICbCAkAALCAmw
+gJAACwgJsICQAAsICbCAkAALCAmwgJCKWaKUei67OUKpiY5zn3vHnjINs3vhkA5d74310Mfd
+sTfYmKG19/92pbrZOHblIqRiRIX0fffc6o5YDyWkkiKkYiKFtMe97z8TGOYkpfb73DOxHho3
+pBbvGiG1hpCKaRHSW0uWLGnK2ympkEYq9fmYD7UWUmvvPyERUjEtQmpNUiG5E9wQ86HWQmoN
+IRFSMS1C8hdN089PHlI35FP3uV/mzFQZ3m4bFjUM7jHukl83P3rtOb27fvIPr9bXH+e+slCp
+Yc5PjxzuOLvvPmFwp4ETbtnm3vu9+vp5O774iS6jb236eNEhdUMvfT98+vDxmk+z0H9b68e7
+o75+ZuP3Dut80Mw12d1ePbNXl2N/HoSUM2Hhkzuhdy04mf/+h8/ZyjVJGUIqRhdS05nZJabG
+bAuF9Lv9m++9cLf3iN9mXq37rlLtnezCv0epg5yPJzTvdcRHjvNPSh2Wff2fJ2du+n+49+w5
+x2stpJbHc+8dekHmtbpXvb0e6pZ5ZVZzSLkTFjy5JyekzMma3/+cc7ZyTVKGkIpZosL2hvQD
+97VhZ45zX85xXlvure9ntjjv9nQ3DhpX5768zt1ns7doD+yh2gchHbiftxa/6t596Am93Zff
+yKxlpbrslz1+n9rsnc1yj/faM4OUuuiZd/23tn68hd5xavq651SnuDut7eRu9O2ROfqG/CMW
+PHlG8K4FJ2t+/3PO2co1SRlCKkYX0jSlzndvblVq/73fSFymVLufOM668Up1+iCz2Dr8h9N4
+U00Qkup/96rXnMOzq3i2Ug3ZtfzlPc4i92bQ6867/ZQ6Mzh53vHyvkdq/XjevdP/x9lwjFL7
+ZO/s/pjT+J3mkPKOWOjkWf67Fpys+f3POWdr1yRdCKkYXUijlRry4FZn68MPP7wrWG3D3c8Y
+3oNea6fUQ44ztPk/zWftDWmFe9v0o9tvdxdxk3v32Mxa3s/9nuI99423uG+8NPyMRt7xWgmp
+5fHce2s3uffemylnT0elFnk7n5QNKe+IhU6eFQ7JO1nz+597ztauSboQUjFLVOvfI13qddXh
+hG897z0V3LzaPna/nvppZld3vX7L+dj9UukR77UHg5D2aT7qX3/yhZPd//w3h3SUe88G97Vf
+OplPGcFazjteKyG1cryF3tdfrqXuq+ucN9yXq7xXf5AJKf+IBU7eLBRS9mTBM3Shc7Z2TdKF
+kIrRhbTx7HbZT1KHPhmstrfdm99ndp3sfS5a47660nvt+SCkoZm3vnVS5pFd/ZDcl5m1/LiT
+u5bzjtdKSK0cb6H39JrryUxIT7gv13uv/iwTUv4RC5y8WSik7Mma3/+cc7Z2TdKFkIrRheT+
+F/l7J3XwVk2ntf5q21mb/Qoss+vXnU3uvb/yXntk77N23qu73C+B9r/8P9/5WrGQ8o7XSkit
+HC83pFfdl694r96WCSn/iEYhZQ7b/P7nnrO1a5IuhFSMJqSNzzzzTJOz5afu99fq34LVNkyp
+S709X3fX64OO00upf/ZenZsb0h/dvd9wb2cUCyn/eJqQco+XG9IO93PEt71Xp2W/R8o7YuyQ
+cs/Z2jVJF0IqRhPSW+7dP3Pv29pJqXszq81bOp91v9H/d8f5+wSlOr6X+SFMZ/dT0l21uSF5
+Pxt9wf0mprZoSHnH04SUe7zckJzT3O9tljnOLSobUt4Ro4X0b06LkHLP2do1SRdCKkb3pd1I
+N44jz558gLsw1zqO+63CUbeuc9bu4+59yHHua5nnhl/zfjAzqJe3hsMh/c37lnzckTXuzZjC
+aznveJqQco+XF9LL3t2Dsj8p2tDiiMVD8t+1vJByz9nqNUkVQipGF9KaA1Qz77/XJ6vsbk81
+/2xTXZr5LZlbvR+LqnZn5oaUfXZLDblYqZ7bC6/lvOO1HlLu8fJCcjI/QVI1p2RDyjtihJCa
+37W8kHLP2eo1SRVCKkYXkrPllklDOu93xGf+5L3y7oze7ffxnqH7+4Kpg7ofc4n/rNUzMwfv
+/+nHn8sLaeeNI7se/YXNK8eOHXtnkbWcezxNSDnHyw/JWfrpfXtN/fmz7hs/bHHECCE1v2v5
+IeWcs9VrkiqElITHU/ij/pQhpFK65txz/8W7nafU1HLPgpIipFK6wv3+6Jply+e7Xzj9R7ln
+QUkRUiltqW/+3rvmK+UeJbrrVNiwco9TIQippHbff8ohnXuPnbO63IMY+Pdzw64u9zgVgpAA
+CwgJsICQAAsICbCAkAALCAmwgJAACwgJsICQAAsICbCAkAALCAmwgJAACwgJsICQAAsICbCA
+kAALCAmwgJAACwgJsICQAAsICbCAkAALCAmwgJAACwgJsICQAAsICbCgbSE1bXi/0dIgQCVr
+Q0jLz+/fQanaAecstzcOUJlih7RjqlL9jm1oqB+o1PSdNkcCKk/skBaoqS9lt1bPVottjQNU
+ptgh1Y/Y7W82TZpgZxigUsUOqcfFe7ev72FhEqCCxQ5p/Mg9wfbk8VZmASpW7JAWqmmvZLfW
+XKgW2RoHqEzxn7VrUGrQxNNOnzREqVN41g4p14afIz01u2+tUrV9Zy1r+batG/faEv8UQIVo
+2282NK77oNXfbHizRu1Vs7u1XYBq0vbftdve2p2vrAzcpT5u8zkA4eKHtOPWS+f/wXl+tNp3
+1rpC+60gJFS/2CFtHOV+1dZx6QG9Txqu+n1YYEdCQgrEDukL6nN/en58lyM3O86d6ksFdiQk
+pEDskEaOc1/8Vt3obR9/VIEdCQkpEDukzle4Lzao/+NtX961wI6EhBSIHdLBZ7gv9lz2mLd9
+5qACOxISUiB2SLPaP+Zv/nddQ4EdCQkpEDukt7qokUu8jd/M61LzXIEdCQkpEP/nSG+e3fcG
+7/ZKNejRQvsRElKgTb/ZkPkfKV5+vangToSEFCj9P8dFSEgBQgIsICTAAkICLCAkwAJCAiwg
+JMACQoIou5ctjWFZ2f85A0KCKI/X9Iyh5olyz01IEOXRQv9LjlaXX9qewxQhQRRC0iEkGCAk
+HUKCAULSISQYICQdQoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBgg
+JB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQY
+ICQdQoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBggJB1CggFC0iEk
+GCAkHUKCAULSISQYICQdQoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIh
+JBggJB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULS
+ISQYICQdQoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBggJB1CggFC
+0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBhIa0iNb6zeXXgPQoKB1IV0w53ui12LuyjV8TMb
+C+1ISDCQupDUie6LearnjPnj1fDtBXYkJBhIZUgv14xb727eo24osCMhwUAqQ7pdrchsHze2
+wI6EBAOpDGmB2prZvqzQO09IMJDKkO5VqzLbZwwssCMhwUD6Quq3+MHne89scjefbT+jwI6E
+BAOpC2lgjfI85jhXdap7qcCOhAQDqQvJ2b7qoRvnHL/UcfqM/kOh/QgJBtIXUuDNVu57eWXg
+LkJCdGkMad3rzb8dtP5veW95s1aF7GzDOZAy6QvphcOVOvDOzOaUFkfZtjHwOJ+REF3qQnq7
+c7spDZ3Uzd52y5BC+B4JBlIX0vk17uzrhnRc7RAS7EldSENP9l6+XjfNISTYk7qQulyeublO
+LSck2JO6kEbVZ2429x2ymZBgTepCulpd+5F3+7A6YxMhwZbUhbTpYNUp823SV1T3XoQES1IX
+krPta+M/kdm4e7giJFiSvpD2alr7ZIG3EhIMpDmkwggJBghJh5BggJB0CAkGCEmHkGCAkHQI
+CQYISYeQYICQdAgJBghJh5BggJB0CAkGCEmHkGCAkHQICQYISYeQYICQdAgJBghJh5BggJB0
+CAkGCEmHkGCAkHQICQYISYeQYICQdAgJBghJh5BggJB0CAkGCEmHkGCAkHQICQYISYeQYICQ
+dAgJBghJh5BggJB0CAkGCEmHkGCAkHQICQYISYeQYICQdAgJBghJh5BggJB0CAkGCEmHkGCA
+kHQICQYISYeQYICQdAgJBghJh5BggJB0CAkGCEmHkGCAkHQICQYISYeQYICQdAgJBghJh5Bg
+gJB0CAkGCEmHkGCAkHQICQYISYeQYICQdAgJBghJh5BggJB0CAkGCEmHkGCAkHQICQYISYeQ
+YICQdAgJBghJh5BggJB0CAkGCEmHkGCAkHQICQYISYeQYICQdAgJBghJh5BggJB0CAkGCEmH
+kGCAkHQICQYISYeQYICQdAgJBghJh5BggJB0CAkGCEmHkGCAkHQICQYISYeQYICQdAgJBghJ
+h5BggJB0CAkGCEmHkGCAkHQICQbSGVLThvcbi+1DSDCQwpCWn9+/g1K1A85ZXnA3QoKB1IW0
+Y6pS/Y5taKgfqNT0nQV2JCQYSF1IC9TUl7Jbq2erxQV2JCQYSF1I9SN2+5tNkyYU2JGQYCB1
+IfW4eO/29T0K7EhIMJC6kMaP3BNsTx5fYEdCgoHUhbRQTXslu7XmQrWowI6EBAOpC2lHg1KD
+Jp52+qQhSp3Cs3awJHUhOc5Ts/vWKlXbd9aygrsREgykMCRX47oPWv3Nht0/eyCwmJAQXRpD
+Wvd68zPg6/+W95a/DB8S6KcKfeEH5EhfSC8crtSBd2Y2pxQ6Cl/awUDqQnq7c7spDZ3Uzd42
+IcGW1IV0fo07+7ohHVc7hAR7UhfS0JO9l6/XTXMICfakLqQul2durlPLCQn2pC6kUfWZm819
+h2wmJFiTupCuVtd+5N0+rM7YREiwJXUhbTpYdcp8m/QV1b0XIcGS1IXkbPva+E9kNu4erggJ
+lqQvpL2a1j5Z4K2EBANpDqkwQoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIB
+QtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBggJB1CggFC0iEkGCAkHUKC
+AULSISQYICQdQoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBggJB1C
+ggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQYICQd
+QoIBQtIhJBggJB1CggFC0iEkGCAkHUKCAULSISQYICQdQoIBQtIhJBggJB1CggFC0iEkGCAk
+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
+CwgJsOB/AW+s5CmQGzBjAAAAAElFTkSuQmCC"
 width=420
 height=420
 >
@@ -16334,9 +15862,17 @@ height=420
 </div>
 
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we calculate the p value, the proportion of randomized test statistics that are greater than your observed test statistic. A higher p value is stronger evidence for a given statistic.</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[243]:</div>
+<div class="prompt input_prompt">In&nbsp;[84]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-r"><pre><span></span><span class="n">num</span> <span class="o">&lt;-</span> <span class="nf">sum</span><span class="p">(</span><span class="n">y0_rss</span> <span class="o">&lt;</span> <span class="n">random_trials</span><span class="p">)</span>
@@ -16371,14 +15907,7 @@ height=420
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Calculating-a-Confidence-Interval">Calculating a Confidence Interval<a class="anchor-link" href="#Calculating-a-Confidence-Interval">&#182;</a></h3>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>To create a confidence interval for the parameter we include any parameter value for which the proportion of the randomized test statistics greater than the observed test statistics are greater than alpha. For example, all parameter values with a p value greater than .05 are inclueded in a 95% confidence interval. Ideally, you'll want to search over a grid of values.</p>
+<p>To calculate the confidence interval, we repeat the above steps for a wide range of parameter values. Combinations with a p value &gt; .05 fall within your 95% confidence interval. Your parameter estimate is the value pair with the highest p-value. In this instance, a p-value of 1 on my first parameter combination indicates I would need to run many more iterations to get an accurate estimate.</p>
 
 </div>
 </div>
